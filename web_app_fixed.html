@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI NutriCare - Web Version (Fixed)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #4CAF50;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .meal-list {
+            list-style: none;
+        }
+
+        .meal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .meal-item:last-child {
+            border-bottom: none;
+        }
+
+        .meal-name {
+            font-weight: 500;
+        }
+
+        .meal-calories {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+        }
+
+        .btn-secondary:hover {
+            background: #1976D2;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .status {
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 AI NutriCare</h1>
+            <p>Intelligent Nutrition Monitoring System</p>
+        </div>
+
+        <div id="status" class="status info">
+            <span class="loading"></span>Connecting to backend server...
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCalories">1,250</div>
+                <div class="stat-label">Total Calories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalProtein">45g</div>
+                <div class="stat-label">Protein</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCarbs">150g</div>
+                <div class="stat-label">Carbohydrates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalFat">35g</div>
+                <div class="stat-label">Fat</div>
+            </div>
+        </div>
+
+        <div class="two-column">
+            <div class="card">
+                <h2>🍽️ Today's Meals</h2>
+                <ul class="meal-list" id="mealList">
+                    <li class="meal-item">
+                        <span class="meal-name">Oatmeal with Berries</span>
+                        <span class="meal-calories">320 kcal</span>
+                    </li>
+                    <li class="meal-item">
+                        <span class="meal-name">Grilled Chicken Salad</span>
+                        <span class="meal-calories">450 kcal</span>
+                    </li>
+                    <li class="meal-item">
+                        <span class="meal-name">Salmon with Vegetables</span>
+                        <span class="meal-calories">480 kcal</span>
+                    </li>
+                </ul>
+                
+                <button class="btn" onclick="showAddMealForm()">+ Add Meal</button>
+            </div>
+
+            <div class="card">
+                <h2>🤖 AI Recommendations</h2>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 8px 0;">• Increase protein intake by 15g</li>
+                    <li style="padding: 8px 0;">• Add more leafy greens to meals</li>
+                    <li style="padding: 8px 0;">• Stay hydrated - drink 8 glasses of water</li>
+                    <li style="padding: 8px 0;">• Consider a light snack in afternoon</li>
+                </ul>
+                
+                <button class="btn btn-secondary" onclick="getNewRecommendations()">Get New Recommendations</button>
+            </div>
+        </div>
+
+        <div class="card" id="addMealForm" style="display: none;">
+            <h2>Add New Meal</h2>
+            <form onsubmit="addMeal(event)">
+                <div class="form-group">
+                    <label for="foodName">Food Name</label>
+                    <input type="text" id="foodName" required placeholder="e.g., Chicken Breast">
+                </div>
+                <div class="form-group">
+                    <label for="calories">Calories</label>
+                    <input type="number" id="calories" required placeholder="e.g., 250">
+                </div>
+                <div class="form-group">
+                    <label for="mealType">Meal Type</label>
+                    <select id="mealType" required>
+                        <option value="">Select meal type</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn">Add Meal</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideAddMealForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+
+        // Check backend connection
+        async function checkBackendConnection() {
+            try {
+                updateStatus('Testing backend connection...', 'info');
+                
+                // Try different endpoints to find what works
+                const endpoints = [
+                    `${API_BASE}/`,
+                    `${API_BASE}/docs`,
+                    `${API_BASE}/api/health`,
+                    `${API_BASE}/health`,
+                    `${API_BASE}/status`
+                ];
+                
+                let connected = false;
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(endpoint);
+                        if (response.ok) {
+                            updateStatus('✅ Connected to backend successfully!', 'success');
+                            connected = true;
+                            console.log('Connected to:', endpoint);
+                            break;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+                
+                if (!connected) {
+                    updateStatus('⚠️ Backend running but API endpoints not found. Using demo mode.', 'error');
+                }
+                
+            } catch (error) {
+                updateStatus('❌ Cannot connect to backend. Using demo data.', 'error');
+                console.log('Backend connection failed:', error);
+            }
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function showAddMealForm() {
+            document.getElementById('addMealForm').style.display = 'block';
+        }
+
+        function hideAddMealForm() {
+            document.getElementById('addMealForm').style.display = 'none';
+            document.querySelector('#addMealForm form').reset();
+        }
+
+        async function addMeal(event) {
+            event.preventDefault();
+            
+            const foodName = document.getElementById('foodName').value;
+            const calories = parseInt(document.getElementById('calories').value);
+            const mealType = document.getElementById('mealType').value;
+
+            // Add meal to the list
+            const mealList = document.getElementById('mealList');
+            const newMeal = document.createElement('li');
+            newMeal.className = 'meal-item';
+            newMeal.innerHTML = `
+                <span class="meal-name">${foodName}</span>
+                <span class="meal-calories">${calories} kcal</span>
+            `;
+            mealList.appendChild(newMeal);
+
+            // Update totals
+            updateTotals(calories);
+
+            // Hide form
+            hideAddMealForm();
+
+            // Show success message
+            updateStatus(`✅ Added ${foodName} to your meals!`, 'success');
+        }
+
+        function updateTotals(newCalories) {
+            const totalCalEl = document.getElementById('totalCalories');
+            const currentTotal = parseInt(totalCalEl.textContent.replace(',', ''));
+            totalCalEl.textContent = (currentTotal + newCalories).toLocaleString();
+        }
+
+        async function getNewRecommendations() {
+            updateStatus('<span class="loading"></span>Getting new AI recommendations...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                updateStatus('✅ New recommendations generated!', 'success');
+            }, 1500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendConnection();
+        });
+    </script>
+</body>
+</html>
